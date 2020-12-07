@@ -43,7 +43,7 @@ func MarshalJSON(obj interface{}) ([]byte, error) {
 	return json.Marshal(v2.Interface())
 }
 
-func SimpleMarshalXML(obj interface{}, e *xml.Encoder) error {
+func processInterface(obj interface{}) interface{} {
 	st := reflect.TypeOf(obj)
 	fs := []reflect.StructField{}
 	for i := 0; i < st.NumField(); i++ {
@@ -84,50 +84,16 @@ func SimpleMarshalXML(obj interface{}, e *xml.Encoder) error {
 
 	v := reflect.ValueOf(obj)
 	v2 := v.Convert(st2)
+	return v2
+}
+
+func SimpleMarshalXML(obj interface{}, e *xml.Encoder) error {
+	v2 := processInterface(obj)
 	return e.Encode(v2.Interface())
 }
 
 func MarshalXML(obj interface{}, e *xml.Encoder, start xml.StartElement) error {
-	st := reflect.TypeOf(obj)
-	fs := []reflect.StructField{}
-	for i := 0; i < st.NumField(); i++ {
-		f := st.Field(i)
-		// skip unexported fields
-		if len(f.PkgPath) != 0 {
-			continue
-		}
-
-		fs = append(fs, f)
-	}
-
-	for i, _ := range fs {
-		if !fieldHasOmitEmpty(fs[i], "xml") {
-			continue
-		}
-
-		val := reflect.ValueOf(obj)
-		j := fs[i].Index[0]
-		valueField := val.Field(j)
-		f := valueField.Interface()
-
-		if isNil(f) {
-			fs[i].Tag = reflect.StructTag(`xml:"-"`)
-			continue
-		}
-
-		if isempty, ok := f.(IsEmptier); ok {
-			if !isempty.IsEmpty() {
-				continue
-			}
-			fs[i].Tag = reflect.StructTag(`xml:"-"`)
-		}
-		continue
-	}
-
-	st2 := reflect.StructOf(fs)
-
-	v := reflect.ValueOf(obj)
-	v2 := v.Convert(st2)
+	v2 := processInterface(obj)
 	return e.EncodeElement(v2.Interface(), start)
 }
 
