@@ -29,6 +29,10 @@ type Finvoice struct {
 	EpiDetails                 EpiDetails                 `xml:"EpiDetails"`
 }
 
+func (f Finvoice) SimpleMarshalXML(e *xml.Encoder, start xml.StartElement) error {
+	return omitempty.SimpleMarshalXML(f, e)
+}
+
 func (f Finvoice) MarshalXML(e *xml.Encoder, start xml.StartElement) error {
 	return omitempty.MarshalXML(f, e, start)
 }
