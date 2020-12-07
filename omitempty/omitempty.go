@@ -43,7 +43,7 @@ func MarshalJSON(obj interface{}) ([]byte, error) {
 	return json.Marshal(v2.Interface())
 }
 
-func processInterface(obj interface{}) interface{} {
+func processInterface(obj interface{}) reflect.Value {
 	st := reflect.TypeOf(obj)
 	fs := []reflect.StructField{}
 	for i := 0; i < st.NumField(); i++ {
